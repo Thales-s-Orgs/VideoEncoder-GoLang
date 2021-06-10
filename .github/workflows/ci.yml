@@ -11,4 +11,17 @@ jobs:
         - uses: actions/setup-go@v2
           with: 
             go-version: 1.16
-        - run: go test ./test/...
+        - name: Test
+          run: go test ./test/...
+          env:
+            DB_TYPE: ${{ secrets.DB_TYPE }}
+            DSN: ${{ secrets.DSN }}
+            DB_TYPE_TEST: ${{ secrets.DB_TYPE_TEST }}
+            DSN_TEST: ${{ secrets.DSN_TEST }}
+            ENV: ${{ secrets.ENV }}
+            DEBUG: ${{ secrets.DEBUG }}
+            AUTO_MIGRATE_DB: ${{ secrets.AUTO_MIGRATE_DB }}
+            localStoragePath: ${{ secrets.localStoragePath }}
+            inputBucketName: ${{ secrets.inputBucketName }}
+            outputBucketName: ${{ secrets.outputBucketName }}
+            GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
