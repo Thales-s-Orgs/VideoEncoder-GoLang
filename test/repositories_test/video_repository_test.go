@@ -4,9 +4,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Thales-s-Orgs/VideoEncoder-GoLang/application/repositories"
 	"github.com/Thales-s-Orgs/VideoEncoder-GoLang/domain"
 	"github.com/Thales-s-Orgs/VideoEncoder-GoLang/framework/database"
-	"github.com/Thales-s-Orgs/VideoEncoder-GoLang/repositories/database"
 	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/require"
 )
