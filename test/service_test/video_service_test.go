@@ -2,6 +2,7 @@ package service_test
 
 import (
 	"log"
+	"os"
 	"testing"
 	"time"
 
@@ -39,12 +40,13 @@ func prepare() (*domain.Video, repositories.VideoRepositoryDb) {
 func TestDownload(t *testing.T) {
 
 	video, repo := prepare()
+	inputBucket := os.Getenv("inputBucketName")
 
 	videoService := services.NewVideoService()
 	videoService.Video = video
 	videoService.VideoRepository = repo
 
-	err := videoService.Download("encodetest")
+	err := videoService.Download(inputBucket)
 	require.Nil(t, err)
 
 	err = videoService.Fragment()
