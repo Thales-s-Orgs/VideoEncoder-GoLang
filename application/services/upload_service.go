@@ -37,7 +37,7 @@ func (us *UploadService) UploadObject(objectPath string, client *storage.Client,
 	wc := client.Bucket(us.OutputBucket).Object(path[1]).NewWriter(ctx)
 	wc.ACL = []storage.ACLRule{{Entity: storage.AllUsers, Role: storage.RoleReader}}
 
-	if _, err := io.Copy(wc, f); err != nil {
+	if _, err = io.Copy(wc, f); err != nil {
 		return err
 	}
 
@@ -77,7 +77,7 @@ func (us *UploadService) ProccessUpload(concurrency int, done chan string) error
 		return err
 	}
 
-	client, ctx, err := us.getClientUpload()
+	client, ctx, err := getClientUpload()
 	if err != nil {
 		return err
 	}
@@ -93,15 +93,12 @@ func (us *UploadService) ProccessUpload(concurrency int, done chan string) error
 		close(in)
 	}()
 
-	go func() {
-		for v := range returnChan {
-			if v != "" {
-				done <- v
-				break
-			}
+	for v := range returnChan {
+		if v != "" {
+			done <- v
+			break
 		}
-		done <- "upload completed"
-	}()
+	}
 
 	return nil
 }
@@ -118,15 +115,16 @@ func (us *UploadService) UploadWorker(in chan int, returnChan chan string, uploa
 
 		returnChan <- ""
 	}
+
+	returnChan <- "upload completed"
 }
 
-func (us *UploadService) getClientUpload() (*storage.Client, context.Context, error) {
+func getClientUpload() (*storage.Client, context.Context, error) {
 	ctx := context.Background()
 
 	client, err := storage.NewClient(ctx)
 	if err != nil {
 		return nil, nil, err
 	}
-
 	return client, ctx, nil
 }
