@@ -3,8 +3,10 @@ package services
 import (
 	"context"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"cloud.google.com/go/storage"
@@ -63,6 +65,59 @@ func (us *UploadService) LoadPaths() error {
 	}
 
 	return nil
+}
+
+func (us *UploadService) ProccessUpload(concurrency int, done chan string) error {
+
+	in := make(chan int, runtime.NumCPU())
+	returnChan := make(chan string)
+
+	err := us.LoadPaths()
+	if err != nil {
+		return err
+	}
+
+	client, ctx, err := us.getClientUpload()
+	if err != nil {
+		return err
+	}
+
+	for proccess := 0; proccess < concurrency; proccess++ {
+		go us.UploadWorker(in, returnChan, client, ctx)
+	}
+
+	go func() {
+		for i := 0; i < len(us.Paths); i++ {
+			in <- i
+		}
+		close(in)
+	}()
+
+	go func() {
+		for v := range returnChan {
+			if v != "" {
+				done <- v
+				break
+			}
+		}
+		done <- "upload completed"
+	}()
+
+	return nil
+}
+
+func (us *UploadService) UploadWorker(in chan int, returnChan chan string, uploadClient *storage.Client, ctx context.Context) {
+	for v := range in {
+
+		err := us.UploadObject(us.Paths[v], uploadClient, ctx)
+		if err != nil {
+			us.Errors = append(us.Errors, us.Paths[v])
+			log.Printf("Error during upload: %v. Error %v", us.Paths[v], err)
+			returnChan <- err.Error()
+		}
+
+		returnChan <- ""
+	}
 }
 
 func (us *UploadService) getClientUpload() (*storage.Client, context.Context, error) {
