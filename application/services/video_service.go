@@ -23,6 +23,15 @@ func printOutput(out []byte) {
 	}
 }
 
+func (v *VideoService) InsertVideo() error {
+	_, err := v.VideoRepository.Insert(v.Video)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func NewVideoService() VideoService {
 	return VideoService{}
 }
